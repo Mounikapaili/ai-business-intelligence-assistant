@@ -1,0 +1,6 @@
+{
+  "name": "AI Business Intelligence Assistant",
+  "description": "Natural-language business intelligence assistant for sales transaction analytics backed by SQLite and FastAPI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

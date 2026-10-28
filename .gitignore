@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.db
+*.sqlite3
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node & Build artifacts
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.dev.env.json
+.dev.pid
+
+# Environment variables
+.env*
+!.env.example
