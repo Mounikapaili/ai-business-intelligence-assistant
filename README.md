@@ -1,318 +1,210 @@
-# AI Business Intelligence Assistant
+# 📊 AI Business Intelligence Assistant
 
-A complete, production-grade business sales analytics application that enables non-technical and executive stakeholders to ask natural-language questions about sales transactions and receive verified, deterministic answers backed by real SQL database queries.
+A local-first sales analytics dashboard that lets users ask supported business questions in plain English and see answers backed by validated SQL queries. The project uses Python, FastAPI, SQLite, Pandas, and Streamlit. **It does not require an OpenAI API key or a paid AI service**: question interpretation is rule-based and runs locally.
+<img width="1366" height="768" alt="Screenshot (121)" src="https://github.com/user-attachments/assets/8d668bfa-0ff0-474f-ad28-97002c595948" />
+<img width="1366" height="768" alt="Screenshot (127) - Copy" src="https://github.com/user-attachments/assets/1da62846-50af-489e-bcd5-72804dde80e2" />
 
-Built entirely without external paid LLM dependencies, API keys, or cloud lock-in.
+<img width="1366" height="768" alt="Screenshot (125)" src="https://github.com/user-attachments/assets/8a8c9d6f-2d8e-43a0-a709-8c7c563af0e6" />
 
----
 
-## Table of Contents
 
-1. [Project Overview & Key Features](#project-overview--key-features)
-2. [Technologies Used](#technologies-used)
-3. [Project Structure](#project-structure)
-4. [Prerequisites](#prerequisites)
-5. [Windows Installation Guide (Beginner-Friendly)](#windows-installation-guide-beginner-friendly)
-6. [macOS / Linux Installation Guide](#macos--linux-installation-guide)
-7. [Running the Application](#running-the-application)
-8. [Automated Testing](#automated-testing)
-9. [Supported Business Questions & Variations](#supported-business-questions--variations)
-10. [Data Ingestion & Revenue Governance Policy](#data-ingestion--revenue-governance-policy)
-11. [Troubleshooting & Known Limitations](#troubleshooting--known-limitations)
-12. [Uploading to GitHub](#uploading-to-github)
+## Features
 
----
+- Ask sales questions in plain English using a fixed set of supported analysis types.
+- View net revenue, eligible transaction count, number of products, and excluded source rows.
+- Explore monthly revenue, product performance, and regional performance with charts and tables.
+- Compare two months and see absolute and percentage change.
+- Validate CSV records before importing them into SQLite.
+- Review data-quality exclusions and the revenue policy.
+- Use a FastAPI backend with `/ask`, `/health`, `/examples`, and `/summary` endpoints.
+- Run automated tests with Pytest.
+- No generated SQL is executed from user input; SQL statements are predefined and month values are parameterized.
 
-## Project Overview & Key Features
+## Technology stack
 
-- **Natural Language Question Answering:** Ask natural business questions in plain English and receive human-readable explanations accompanied by verified numerical figures.
-- **Deterministic & Safe Execution:** Maps user questions to safe, pre-compiled parameterized SQL queries. Guarantees zero SQL injection vulnerabilities and zero LLM hallucinations.
-- **Strict Revenue Governance Policy:** Automatically flags and excludes returned goods, zero/negative quantities, and records with missing unit prices without altering the raw CSV.
-- **Interactive Visualizations:** High-fidelity charts for monthly trends, product performance rankings, regional market shares, and month-over-month comparisons.
-- **Dual Interface:** Streamlit desktop/web interface (`ui.py`) and an optional React web dashboard, both powered by a unified FastAPI REST backend (`app/main.py`).
-- **Comprehensive Automated Test Suite:** 21 automated tests covering calculations, known dataset edge cases, idempotency, API routes, and injection protection.
+- Python 3.10+
+- FastAPI and Uvicorn — REST API
+- Streamlit — dashboard interface
+- SQLite — local database
+- Pandas — CSV validation and data preparation
+- Requests — dashboard-to-API communication
+- Pytest and HTTPX — tests
 
----
-
-## Technologies Used
-
-- **Language:** Python 3.10+
-- **Backend API:** FastAPI & Uvicorn
-- **Database:** SQLite (embedded, persistent, ACID-compliant)
-- **User Interface:** Streamlit & Plotly (interactive charts)
-- **Data Ingestion & Cleaning:** Pandas & Standard Library
-- **Analytics Engine:** Parameterized SQL queries
-- **Testing:** Pytest & FastAPI TestClient
-
----
-
-## Project Structure
+## Project structure
 
 ```text
 ai-business-intelligence-assistant/
 ├── app/
-│   ├── __init__.py               # Application package definition
-│   ├── database.py               # SQLite schema creation and connection manager
-│   ├── data_loader.py            # CSV ingestion, data normalization & policy validation
-│   ├── analytics.py              # Parameterized SQL calculations for all 5 business questions
-│   ├── question_interpreter.py   # Deterministic intent matching & parameter parsing
-│   └── main.py                   # FastAPI application with REST endpoints
+│   ├── __init__.py
+│   ├── analytics.py          # SQL-backed analytics functions
+│   ├── database.py           # SQLite schema and connections
+│   ├── data_loader.py        # CSV validation and import
+│   ├── import_data.py        # Manual CSV import command
+│   ├── main.py               # FastAPI endpoints
+│   └── question_interpreter.py # Supported question patterns
 ├── data/
-│   └── ai_bi_assistant_sales_data - GET.csv  # Raw supplied sales dataset (51 rows)
+│   └── ai_bi_assistant_sales_data - GET.csv
+├── screenshots/
+│   └── output_screen.png     # Dashboard preview
 ├── tests/
-│   ├── __init__.py               # Test package definition
-│   ├── test_analytics.py         # Unit tests for revenue calculations & rankings
-│   ├── test_data_loader.py       # Tests for exclusions (TXN0033, TXN0034, TXN0051) & idempotency
-│   ├── test_question_interpreter.py # Tests for natural language matching & month parsing
-│   └── test_api.py               # Integration tests for FastAPI endpoints & SQL safety
-├── ui.py                         # Streamlit interactive user interface
-├── run_app.py                    # Unified runner script (backend + frontend)
-├── run_backend.bat               # 1-click Windows runner for FastAPI
-├── run_ui.bat                    # 1-click Windows runner for Streamlit
-├── run_tests.bat                 # 1-click Windows runner for test suite
-├── requirements.txt              # Pinned Python package dependencies
-├── README.md                     # Comprehensive documentation
-├── ARCHITECTURE.md               # End-to-end architecture explanation
-├── DEVELOPMENT_NOTES.md          # Real development logs, debugging & verification
-└── .gitignore                    # Git exclusion rules
+│   ├── conftest.py
+│   ├── test_analytics.py
+│   ├── test_api.py
+│   └── test_question_interpreter.py
+├── ui.py
+├── requirements.txt
+├── README.md
+├── ARCHITECTURE.md
+├── DEVELOPMENT_NOTES.md
+└── .gitignore
 ```
 
----
+## Run locally on Windows (VS Code)
 
-## Prerequisites
+### 1. Open the project folder
 
-- **Python:** Version 3.10, 3.11, or 3.12 installed on your machine.
-- **Git:** Installed on your computer (for version control and GitHub upload).
-- Optional: Modern web browser (Chrome, Edge, Firefox, Safari).
+Extract the ZIP, then open the `ai-business-intelligence-assistant` folder in VS Code. Open **Terminal → New Terminal** and confirm the terminal is in the project root (the folder containing `ui.py` and `requirements.txt`).
 
----
+### 2. Create and activate a virtual environment
 
-## Windows Installation Guide (Beginner-Friendly)
-
-Follow these exact steps in **PowerShell** or **Command Prompt**:
-
-### Step 1: Open Terminal in the Project Folder
-Open PowerShell and navigate to the project directory:
 ```powershell
-cd path\to\ai-business-intelligence-assistant
+py --version
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-### Step 2: Create a Virtual Environment
+If PowerShell blocks activation for the current terminal session, run:
+
 ```powershell
-python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
 ```
 
-### Step 3: Activate the Virtual Environment
-- In PowerShell:
-  ```powershell
-  .\.venv\Scripts\Activate.ps1
-  ```
-  *(If PowerShell displays an Execution Policy error, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`)*
-- Or in standard Command Prompt (`cmd.exe`):
-  ```cmd
-  .venv\Scripts\activate.bat
-  ```
+### 3. Install packages
 
-### Step 4: Install Dependencies
 ```powershell
-pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
+### 4. Import the sales CSV (optional)
 
-## macOS / Linux Installation Guide
+The API imports the bundled CSV when it starts. You can also import it manually:
 
-Open your Terminal and run:
-
-```bash
-# 1. Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 2. Upgrade pip and install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
+```powershell
+python -m app.import_data
 ```
 
----
+The command prints a report showing how many source rows were read, imported, or excluded.
 
-## Running the Application
+### 5. Start the backend API
 
-### Option A: Unified 1-Command Runner (Recommended)
+In **Terminal 1**, run:
 
-Run both the FastAPI backend and Streamlit UI together:
-```bash
-# Windows
-python run_app.py
-
-# macOS / Linux
-python3 run_app.py
+```powershell
+uvicorn app.main:app --reload
 ```
-This automatically starts:
-- **FastAPI Backend:** `http://127.0.0.1:8000` (API Docs: `http://127.0.0.1:8000/docs`)
-- **Streamlit UI:** `http://127.0.0.1:8501`
 
----
+Keep this terminal open. Useful backend URLs:
 
-### Option B: Running in Two Separate Terminals
+- API health: `http://127.0.0.1:8000/health`
+- Interactive API docs: `http://127.0.0.1:8000/docs`
+- Dataset summary: `http://127.0.0.1:8000/summary`
 
-#### Terminal 1 — Start the Backend:
-```bash
-# Activate virtual environment first
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
+### 6. Start the dashboard
 
-uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-You can verify the backend is running by opening: `http://127.0.0.1:8000/health`.
+Open **Terminal 2** in the same project folder and activate the virtual environment:
 
-#### Terminal 2 — Start the Streamlit User Interface:
-```bash
-# Activate virtual environment first
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
-
+```powershell
+.\.venv\Scripts\Activate.ps1
 streamlit run ui.py
 ```
-The browser will automatically open `http://localhost:8501`.
 
----
+Open the local URL printed by Streamlit, usually `http://localhost:8501`. Both the API and dashboard terminals must remain running.
 
-## Automated Testing
+### 7. Run tests
 
-The project includes an automated test suite with **21 tests** covering all five analytics questions, edge cases, data policy exclusions, and API endpoints.
+From the project root, with the virtual environment active:
 
-Run the test suite with:
-```bash
-pytest -v
+```powershell
+python -m pytest -v
 ```
 
-Expected output:
-```text
-tests/test_analytics.py::test_total_revenue_calculation PASSED
-tests/test_analytics.py::test_highest_revenue_product PASSED
-tests/test_analytics.py::test_monthly_revenue_aggregation PASSED
-tests/test_analytics.py::test_highest_revenue_region PASSED
-tests/test_analytics.py::test_month_to_month_comparison PASSED
-tests/test_api.py::test_health_endpoint PASSED
-tests/test_api.py::test_examples_endpoint PASSED
-tests/test_api.py::test_summary_endpoint PASSED
-tests/test_api.py::test_ask_all_five_required_questions PASSED
-tests/test_api.py::test_ask_unsupported_and_empty_payloads PASSED
-tests/test_api.py::test_sql_injection_safety PASSED
-tests/test_api.py::test_transactions_endpoint PASSED
-tests/test_data_loader.py::test_data_ingestion_and_policy_exclusions PASSED
-tests/test_data_loader.py::test_repeated_csv_ingestion_idempotency PASSED
-tests/test_data_loader.py::test_real_dataset_known_cases PASSED
-tests/test_question_interpreter.py::test_total_revenue_variations PASSED
-tests/test_question_interpreter.py::test_top_product_variations PASSED
-tests/test_question_interpreter.py::test_monthly_trend_variations PASSED
-tests/test_question_interpreter.py::test_top_region_variations PASSED
-tests/test_question_interpreter.py::test_month_parameter_extraction PASSED
-tests/test_question_interpreter.py::test_empty_and_unsupported_questions PASSED
+The included test suite was verified in the build environment: **17 tests passed**.
 
-======================== 21 passed in 1.25s ========================
+## Example questions
+
+Try these in the dashboard:
+
+- `What is the total revenue?`
+- `Which product generated the highest revenue?`
+- `What is the monthly revenue trend?`
+- `Which region generated the highest sales?`
+- `Compare January and February 2026.`
+
+Question interpretation is intentionally limited to approved analytics patterns. Questions asking for unsupported analyses will receive a helpful message rather than a guessed answer. This is not currently a general-purpose LLM chatbot.
+
+## Dataset and example results
+
+The bundled CSV contains **51 source rows** covering January–June 2026. On import, the validation policy accepted **48 eligible completed transactions** and excluded **3 source rows**:
+
+- `TXN0033` — returned transaction.
+- `TXN0034` — quantity is zero.
+- `TXN0051` — unit price is missing.
+
+Observed aggregate results from the supplied dataset:
+
+| Metric | Result |
+|---|---:|
+| Net revenue | 1,439,200.00 |
+| Eligible transactions | 48 |
+| Units sold | 633 |
+| Highest-revenue product | Monitor — 473,000.00 |
+| Highest-revenue region | South — 411,200.00 |
+| Highest month | May 2026 — 318,500.00 |
+| Lowest month | January 2026 — 210,250.00 |
+
+**Currency note:** The CSV does not specify a currency, so the application reports values in unspecified dataset currency units rather than assuming INR, USD, or another currency.
+
+## Data validation and revenue calculation
+
+- Date strings are parsed strictly as `DD-MM-YYYY` and stored in ISO format.
+- Required fields and numeric values are validated before a row can enter the analytics database.
+- Returned transactions, invalid dates/statuses, duplicate IDs, missing prices, and zero/negative or invalid quantities are excluded and reported.
+- Net revenue is calculated as `quantity × unit price − transaction-level discount`.
+- Missing unit prices are not replaced with zero.
+- Re-importing a CSV is idempotent by transaction ID; it does not multiply duplicate records.
+- Analytics operate only on accepted transactions. The original CSV is not modified.
+
+## API quick test (PowerShell)
+
+Health check:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/health
 ```
 
----
+Ask a question:
 
-## Supported Business Questions & Variations
-
-The assistant natively recognizes and answers the 5 core business questions and their phrasing variations:
-
-### 1. Total Net Revenue
-- *"What is the total revenue?"*
-- *"What is our total revenue?"*
-- *"How much revenue did we make?"*
-- *"Total net sales"*
-- **Result:** **₹1,439,200.00** across 48 eligible completed orders (633 units sold, ₹4,500 in discounts).
-
-### 2. Highest-Revenue Product
-- *"Which product generated the highest revenue?"*
-- *"Which product performed best?"*
-- *"Top product by sales"*
-- **Result:** **Monitor** (Electronics) at **₹473,000.00** across 9 orders (32.87% revenue share).
-
-### 3. Monthly Revenue Trend
-- *"What is the monthly revenue trend?"*
-- *"Show sales month by month"*
-- *"Revenue trend over time"*
-- **Result:** Spans 6 months (January to June 2026). Peak revenue occurred in **May 2026** at **₹318,500.00**.
-
-### 4. Highest-Revenue Region
-- *"Which region generated the highest sales?"*
-- *"Which region performed best?"*
-- *"Sales by region"*
-- **Result:** **South** at **₹411,200.00** across 13 transactions (28.57% revenue share).
-
-### 5. Month-over-Month Comparison
-- *"How did revenue change between two months?"*
-- *"Compare January and February 2026"*
-- *"Compare 2026-04 to 2026-05"*
-- **Result:** Revenue increased by **+₹24,350.00 (+11.58%)** from January 2026 (₹210,250.00) to February 2026 (₹234,600.00).
-
----
-
-## Data Ingestion & Revenue Governance Policy
-
-The data ingestion module (`app/data_loader.py`) enforces strict validation rules to guarantee data integrity:
-
-1. **Net Revenue Formula:**
-   $$\text{Net Revenue} = (\text{Quantity} \times \text{Unit Price}) - \text{Discount Amount}$$
-   Discount amount is treated as a transaction-level deduction.
-
-2. **Exclusion Rules:**
-   - **Returned Transactions:** Excluded from completed sales.
-     - *Verified Case:* `TXN0033` (Status: `Returned`) is flagged and omitted from revenue.
-   - **Zero or Negative Quantity:** Excluded from completed sales.
-     - *Verified Case:* `TXN0034` (Quantity: `0`) is flagged and omitted from revenue.
-   - **Missing Unit Price:** Excluded.
-     - *Verified Case:* `TXN0051` (Unit price is empty) is excluded. The system **never** silently replaces missing prices with zero.
-
-3. **Source CSV Preservation:** The original `data/ai_bi_assistant_sales_data - GET.csv` is read in read-only mode and preserved completely intact.
-
-4. **Idempotency:** Re-running the ingestion pipeline (`ingest_sales_csv()`) uses SQLite `ON CONFLICT(transaction_id) DO UPDATE` so repeated imports never create duplicate records.
-
----
-
-## Troubleshooting & Known Limitations
-
-### Common Issues & Fixes:
-1. **Port Already in Use:**
-   If port 8000 or 8501 is occupied by another application, specify custom ports:
-   ```bash
-   python run_app.py --backend-port 8001 --ui-port 8502
-   ```
-2. **Missing Dependencies:**
-   Ensure your virtual environment is activated before running scripts. The prompt should show `(.venv)`.
-3. **Streamlit Connection Warning:**
-   If Streamlit indicates "Backend Disconnected", make sure the FastAPI server is running in a terminal.
-
-### Known Limitations:
-- The initial question interpreter uses deterministic regex and keyword pattern matching for maximum reliability and offline execution. Queries far outside sales analytics (e.g., weather or general trivia) are classified as unsupported with clear guidance.
-- An optional LLM provider can be integrated via the modular `SafeQuestionInterpreter` class interface if complex conversational dialog is required in the future.
-
----
-
-## Uploading to GitHub
-
-To push this project to your GitHub account:
-
-```bash
-# 1. Initialize Git repository
-git init
-
-# 2. Stage all project files (.gitignore ensures venv and databases are excluded)
-git add .
-
-# 3. Create initial commit
-git commit -m "feat: complete AI Business Intelligence Assistant application"
-
-# 4. Create a repository on github.com, then link it:
-git remote add origin https://github.com/<YOUR_GITHUB_USERNAME>/ai-business-intelligence-assistant.git
-
-# 5. Push to main branch
-git branch -M main
-git push -u origin main
+```powershell
+$body = @{ question = 'Which region generated the highest sales?' } | ConvertTo-Json
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8000/ask `
+  -ContentType 'application/json' `
+  -Body $body
 ```
+
+## Troubleshooting
+
+- **Dashboard says it cannot reach the API:** Start `uvicorn app.main:app --reload` in Terminal 1 and refresh the dashboard.
+- **CSV file not found:** Check that the CSV is inside the project's `data` folder and the filename matches.
+- **PowerShell blocks environment activation:** Use the process-scoped execution policy command above or activate from Command Prompt with `.venv\Scripts\activate.bat`.
+- **Port 8000 is already in use:** Start the API on another port, for example `uvicorn app.main:app --reload --port 8001`, then set `$env:BI_API_URL = 'http://127.0.0.1:8001'` before running Streamlit.
+- **A question is unsupported:** Rephrase it using one of the example question patterns. Add new intent handling and tests before expanding the supported question set.
+
+## Limitations
+
+- The interpreter supports a finite set of analytics question types; it does not infer every possible business question.
+- The dataset currency is not identified.
+- The dashboard is intended for local development and is not hardened for multi-user production deployment.
+- A live Streamlit screenshot should be captured after starting the app on your own machine; the included PNG is a preview based on real data values.
